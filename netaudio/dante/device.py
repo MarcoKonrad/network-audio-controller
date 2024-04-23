@@ -166,6 +166,14 @@ class DanteDevice:
         return response
 
     async def identify(self):
+        """
+        Create the command to identify the devices
+
+        Returns
+        -----------
+        response : command
+            The command for the identification of a device
+        """
         command_identify = self.command_identify()
         response = await self.dante_command(*command_identify)
 
@@ -214,22 +222,78 @@ class DanteDevice:
         return response
 
     async def enable_aes67(self, is_enabled: bool):
+        """
+        Create a command to enable aes67.
+
+        Parameters:
+        -----------
+        is_enabled : bool
+            check if aes67 is enabled
+
+        Returns:
+        -----------
+        response : command
+            The command for the dante network to enable aes67
+        """
         command_enable_aes67 = self.command_enable_aes67(is_enabled=is_enabled)
         response = await self.dante_command(*command_enable_aes67)
 
         return response
 
     async def set_encoding(self, encoding):
+        """
+        Create a command to set the encoding.
+
+        Parameters:
+        -----------
+        encoding : 
+            encoding type
+
+        Returns:
+        -----------
+        response : command
+            The command for the dante network to set the encoding
+        """
         response = await self.dante_command(*self.command_set_encoding(encoding))
 
         return response
 
     async def set_sample_rate(self, sample_rate):
+        """
+        Create a command to set the sample rate of the device.
+
+        Parameters:
+        -----------
+        sample_rate : int 
+            sample rate of the device
+
+        Returns:
+        -----------
+        response : command
+            The command for the dante network to set the sample rate.
+        """
         response = await self.dante_command(*self.command_set_sample_rate(sample_rate))
 
         return response
 
     async def add_subscription(self, rx_channel, tx_channel, tx_device):
+        """
+        Create a command to add a subscription to a channel.
+
+        Parameters:
+        -----------
+        rx_channel : int 
+            number of the sending channel
+        tx_channel : int
+            number of the recieving channel
+        tx_device : string
+            name of the recieving device
+
+        Returns:
+        -----------
+        response : command
+            The command for the dante network to set the subscription.
+        """
         response = await self.dante_command(
             *self.command_add_subscription(
                 rx_channel.number, tx_channel.name, tx_device.name
@@ -239,6 +303,19 @@ class DanteDevice:
         return response
 
     async def remove_subscription(self, rx_channel):
+        """
+        Create a command to remove a subscription from a channel.
+
+        Parameters:
+        -----------
+        rx_channel : int 
+            number of the sending channel
+
+        Returns:
+        -----------
+        response : command
+            The command for the dante network to remove the subscription.
+        """
         response = await self.dante_command(
             *self.command_remove_subscription(rx_channel.number)
         )
@@ -246,6 +323,21 @@ class DanteDevice:
         return response
 
     async def reset_channel_name(self, channel_type, channel_number):
+        """
+        Create a command to reset the name of a channel to default.
+
+        Parameters:
+        -----------
+        channel_type : string 
+            type of the channel (rx/tx)
+        channel_number : int
+            number of the channel whose name is reset
+
+        Returns:
+        -----------
+        response : command
+            The command for the dante network to reset the channel name.
+        """
         response = await self.dante_command(
             *self.command_reset_channel_name(channel_type, channel_number)
         )
@@ -253,11 +345,32 @@ class DanteDevice:
         return response
 
     async def set_name(self, name):
+        """
+        Create a command to change the name of the device.
+
+        Parameters:
+        -----------
+        name : string 
+            new name of the device
+
+        Returns:
+        -----------
+        response : command
+            The command for the dante network to set the device name.
+        """
         response = await self.dante_command(*self.command_set_name(name))
 
         return response
 
     async def reset_name(self):
+        """
+        Create a command to reset the name of the device.
+
+        Returns:
+        -----------
+        response : command
+            The command for the dante network to reset the device name.
+        """
         response = await self.dante_command(*self.command_reset_name())
 
         return response
@@ -452,9 +565,6 @@ class DanteDevice:
 
                     break
                 except socket.timeout:
-                    break
-                except Exception as e:
-                    print(e)
                     traceback.print_exc()
                     break
 
@@ -463,6 +573,9 @@ class DanteDevice:
             print(e)
 
     async def get_rx_channels(self):
+        """
+        Get all the RX channels from a device and store them in self.
+        """
         rx_channels = {}
         subscriptions = []
 
@@ -537,6 +650,9 @@ class DanteDevice:
         self.subscriptions = subscriptions
 
     async def get_tx_channels(self):
+        """
+        Get all the TX channels from a device and store them in self.
+        """
         tx_channels = {}
         tx_friendly_channel_names = {}
 
