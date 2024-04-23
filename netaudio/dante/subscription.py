@@ -5,24 +5,34 @@ from netaudio.dante.const import (
 
 
 class DanteSubscription:
+    """Class containing the subscription of a dante channel."""
     def __init__(self):
         self._error = None
+        
+        #initalize reciever parameters
         self._rx_channel = None
         self._rx_channel_name = None
         self._rx_device = None
         self._rx_device_name = None
+
+        #initalize status code and messages
         self._status_code = None
         self._status_message = []
+
+        #initalize transmitter parameters
         self._tx_channel = None
         self._tx_channel_name = None
         self._tx_device = None
         self._tx_device_name = None
 
     def __str__(self):
+        """Return string representation of channel subscription"""
         if self.tx_channel_name and self.tx_device_name:
-            text = f"{self.rx_channel_name}@{self.rx_device_name} <- {self.tx_channel_name}@{self.tx_device_name}"
+            #Existing subscription
+            text = f"{self.rx_channel_name}@{self.rx_device_name} <- {self.tx_channel_name}@{self.tx_device_name}" 
         else:
-            text = f"{self.rx_channel_name}@{self.rx_device_name}"
+            #No existing subscription
+            text = f"{self.rx_channel_name}@{self.rx_device_name}"  
 
         status_text = self.status_text()
 
@@ -35,12 +45,15 @@ class DanteSubscription:
         return text
 
     def status_text(self):
+        """Return the current subscription status"""
         return SUBSCRIPTION_STATUS_LABELS[self.status_code]
 
     def rx_channel_status_text(self):
+        """Return the current RX-channel status"""
         return SUBSCRIPTION_STATUS_LABELS[self.rx_channel_status_code]
 
     def to_json(self):
+        "Return subscription as json file"
         as_json = {
             "rx_channel": self.rx_channel_name,
             "rx_channel_status_code": self.rx_channel_status_code,
