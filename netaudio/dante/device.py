@@ -22,6 +22,7 @@ sockets = {}
 
 
 class DanteDevice:
+    """Class containing all the properties of a dante device"""
     def __init__(self, server_name=""):
         self._dante_model = ""
         self._dante_model_id = ""
@@ -47,6 +48,7 @@ class DanteDevice:
         self._tx_count_raw = 0
 
     def __str__(self):
+        """Return name of the device"""
         return f"{self.name}"
 
     def dante_command_new(self, command, control):
@@ -58,15 +60,32 @@ class DanteDevice:
         return response
 
     async def dante_send_command(self, command, service_type=None, port=None):
+        """
+        Executes the command within the dante network.
+
+        Parameters:
+        -----------
+        command : command
+            The command that is going to be executed
+        service_type : str
+            The service type (UDP)
+        port : int
+            The port the command is send to
+        """
+
+        #If the service type is not given, ask for it
         if service_type:
             service = self.get_service(service_type)
             sock = self.sockets[service["port"]]
 
+        #If the port is not given, ask for it
         if port:
             sock = self.sockets[port]
 
+        #Decodes the command into a binary_str
         binary_str = codecs.decode(command, "hex")
 
+        #Send the command to the device
         try:
             sock.send(binary_str)
         except Exception as e:
@@ -74,23 +93,44 @@ class DanteDevice:
             traceback.print_exc()
 
     async def dante_command(self, command, service_type=None, port=None):
+        """
+        Executes the command within the dante network. Asks for a response of the device.
+
+        Parameters:
+        -----------
+        command : command
+            The command that is going to be executed
+        service_type : str
+            The service type (UDP)
+        port : int
+            The port the command is send to
+
+        Returns:
+        -----------
+        response : str
+            The response of the dante device after executing the command
+        """
         response = None
         sock = None
 
+        #If the service type is not given, ask for it
         if service_type:
             service = self.get_service(service_type)
 
             if service and service["port"] and service["port"] in self.sockets:
                 sock = self.sockets[service["port"]]
 
+        #If the port is not given, ask for it
         if port:
             sock = self.sockets[port]
 
         if not sock:
             return
 
+        #Decodes the command into a binary_str
         binary_str = codecs.decode(command, "hex")
 
+        #Send the command to the device and wait for response
         try:
             sock.send(binary_str)
             response = sock.recvfrom(2048)[0]
@@ -100,6 +140,23 @@ class DanteDevice:
         return response
 
     async def set_channel_name(self, channel_type, channel_number, new_channel_name):
+        """
+        Create the command to set the name of a channel
+        
+        Parameters:
+        -----------
+        channel_type : str 
+            The type of the channel (RX/TX)
+        channel_number : int
+            The number of the channel that will be changed
+        new_channel_name : str
+            The name that the channel is going to have
+
+        Returns
+        -----------
+        response : command
+            The command for the dante network to set the channel name
+        """
         response = await self.dante_command(
             *self.command_set_channel_name(
                 channel_type, channel_number, new_channel_name
@@ -115,11 +172,41 @@ class DanteDevice:
         return response
 
     async def set_latency(self, latency):
+        """
+        Create a command to set the latency of the device.
+
+        Parameters:
+        -----------
+        latency : int
+            The latency in msec
+        
+        Returns:
+        -----------
+        response : command
+            The command for the dante network to set the latency of the device
+        """
         response = await self.dante_command(*self.command_set_latency(latency))
 
         return response
 
     async def set_gain_level(self, channel_number, gain_level, device_type):
+        """
+        Create a command to set the gain of a channel.
+
+        Parameters:
+        -----------
+        channel_number : int
+            The channel where the gain is changed
+        gain_level : float
+            The level of the gain of the channel
+        device_type : str
+            Type of the channel (RX/TX)
+        
+        Returns:
+        -----------
+        response : command
+            The command for the dante network to set the gain of the channel
+        """
         response = await self.dante_command(
             *self.command_set_gain_level(channel_number, gain_level, device_type)
         )
@@ -1016,9 +1103,27 @@ class DanteDevice:
         )
 
     def command_set_channel_name(self, channel_type, channel_number, new_channel_name):
+        """
+        Creates the command in hex for setting the channel name.
+
+        Parameters:
+        -----------
+        channel_type : str
+            Type of the channel (RX/TX)
+        channel_number : int
+            Number of the channel that is changed
+        new_channel_name : str
+            New name of the channel
+
+        Returns:
+        ----------
+        command
+        """
+        # Encode the name into hex
         name_hex = new_channel_name.encode().hex()
         channel_hex = f"{channel_number:02x}"
 
+        # Set the channel name depending on the type of the channel
         if channel_type == "rx":
             command_str = "3001"
             command_args = f"0000020100{channel_hex}001400000000{name_hex}00"
