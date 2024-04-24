@@ -1,5 +1,9 @@
 class DanteChannel:
+    """
+    Create a channel of a device
+    """
     def __init__(self):
+        #init channel params
         self._channel_type = None
         self._device = None
         self._friendly_name = None
@@ -10,6 +14,14 @@ class DanteChannel:
         self._volume = None
 
     def __str__(self):
+        """
+        Returns the name/friendly name and the volume of the channel.
+
+        Returns:
+        ----------
+        text : str
+            number:name volume
+        """
         if self.friendly_name:
             name = self.friendly_name
         else:

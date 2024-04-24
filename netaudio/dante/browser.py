@@ -35,33 +35,73 @@ JSONEncoder.default = _default
 
 
 class DanteBrowser:
+    """
+    Class for finding dante devices and services
+    """
     def __init__(self, mdns_timeout, queue=None) -> None:
+        #List of all DanteDevices
         self._devices = {}
+        #List of all DanteServices
         self.services = []
         self.queue = queue
+        #Time until discovery phase is stopped
         self._mdns_timeout: float = mdns_timeout
         self.aio_browser: AsyncServiceBrowser = None
         self.aio_zc: AsyncZeroconf = None
 
     @property
     def mdns_timeout(self):
+        """
+        Returns the set mDNS timeout
+
+        Returns:
+        -----------
+        mdns_timeout : float
+            mDNS timeout
+        """
         return self._mdns_timeout
 
     @mdns_timeout.setter
     def mdns_timeout(self, mdns_timeout):
+        """"
+        Sets the mDNS timeout
+
+        Parameters:
+        -----------
+        mdns_timeout : float
+            new time for mDNS timeout
+        """
         self._mdns_timeout = mdns_timeout
 
     @property
     def devices(self):
+        """
+        Returns all found devices in the Dante network
+
+        Returns:
+        -----------
+        list : devices
+            List of all found devices
+        """
         return self._devices
 
     @devices.setter
     def devices(self, devices):
+        """
+        Stores all found devices in the Dante network
+
+        Parameters:
+        -----------
+        devices : list of devices
+            List of devices
+        """
         self._devices = devices
 
     def sync_parse_state_change(self, zeroconf, service_type, name, state_change):
+        #Request info on service type of a device
         info = ServiceInfo(service_type, name)
 
+        #Check wether a service has been changed or not and request addiontal data
         if state_change != ServiceStateChange.Removed:
             info_success = info.request(zeroconf, 3000)
 
@@ -69,7 +109,7 @@ class DanteBrowser:
                 return
 
         service_properties = {}
-
+        
         for key, value in info.properties.items():
             key = key.decode("utf-8")
 
@@ -224,6 +264,16 @@ class DanteBrowser:
         await self.aio_zc.async_close()
 
     async def get_devices(self) -> None:
+        """
+        Request all devices within the Dante network
+
+        Return:
+        -----------
+        devices : list of devices
+            List of devices
+        """
+
+        #Start services. Interrupt if keyboard interrupt
         await self.get_services()
         await asyncio.gather(*self.services)
 
@@ -281,6 +331,9 @@ class DanteBrowser:
         return self.devices
 
     async def get_services(self) -> None:
+        """
+        Runs the the async services until a keyboard interrupt
+        """
         try:
             await self.async_run()
         except KeyboardInterrupt:
